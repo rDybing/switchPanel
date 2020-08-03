@@ -26,6 +26,14 @@ Non standard libraries used in this project (go get -v)
 
 ---
 
+## Binary
+
+In Linux it will have to be run using sudo. In Windows, you'll probably have to agree to it being not signed and potentially even run as admin. I'll know when getting it compiled in Windows. Which as it turns out is a bit of a hurdle that I'll have to figure out.
+
+Reason for these elevated priveliges is two-fold. For one, at least in Linux, without root/sudo, it won't grab the usb interface. Secondly, in the README for the keybd_event library it states it won't work unless running as root/sudo.
+
+Windows may or may not be more forgiving.
+
 ## USB info
 
 From probing the USB devices (in linux) I fished out this info regarding the Logitech Switch Panel:

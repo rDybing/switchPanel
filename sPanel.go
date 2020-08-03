@@ -117,6 +117,7 @@ func initUSB(keymap keymapT) {
 	if err != nil {
 		log.Fatalf("Opening %s.InEndpoint(1) failed: %v\n", intf, err)
 	}
+	counter := 0
 	for {
 		buf := make([]byte, epIn.Desc.MaxPacketSize)
 		inBytes, err := epIn.Read(buf)
@@ -126,6 +127,11 @@ func initUSB(keymap keymapT) {
 		if inBytes == 0 {
 			log.Fatalf("IN endpoint 1 returned 0 bytes of data.\n")
 		}
-		fmt.Printf("Bytes received: %v\n", buf)
+		fmt.Printf("%03d-Data:", counter)
+		for i := range buf {
+			fmt.Printf("-%03d", buf[i])
+		}
+		fmt.Println()
+		counter++
 	}
 }
