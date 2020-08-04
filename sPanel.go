@@ -20,6 +20,12 @@ type keymapT struct {
 	Gear   [][]int // 0 and 1
 }
 
+type panelT struct {
+	rotary [5]bool
+	rocker [13]bool
+	gear   [2]bool
+}
+
 func main() {
 	var input string
 	quit := false
@@ -118,6 +124,7 @@ func initUSB(keymap keymapT) {
 		log.Fatalf("Opening %s.InEndpoint(1) failed: %v\n", intf, err)
 	}
 	counter := 0
+	//var p panelT
 	for {
 		buf := make([]byte, epIn.Desc.MaxPacketSize)
 		inBytes, err := epIn.Read(buf)
@@ -128,10 +135,19 @@ func initUSB(keymap keymapT) {
 			log.Fatalf("IN endpoint 1 returned 0 bytes of data.\n")
 		}
 		fmt.Printf("%03d-Data:", counter)
-		for i := range buf {
-			fmt.Printf("-%03d", buf[i])
+		for i := 0; i < 3; i++ {
+			fmt.Printf("-%08b", uint8(buf[i]))
 		}
+		//getPanelSwitch(buf, &p)
 		fmt.Println()
 		counter++
+	}
+}
+
+func getPanelSwitch(b []byte, p *panelT) {
+	// rocker 2 on
+	if b[0] == 4 && b[1] == 32 && b[2] == 4 {
+		p.rocker[2] = true
+		fmt.Printf("Upper Switch 2 %v", p.rocker)
 	}
 }
