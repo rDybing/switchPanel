@@ -92,8 +92,8 @@ func initUSB(keymap keymapT) {
 	defer ctx.Close()
 	dev, err := ctx.OpenDeviceWithVIDPID(0x06a3, 0x0d67)
 	defer dev.Close()
-	if err != nil {
-		log.Fatalf("OpenDevice failed: %v\n", err)
+	if err != nil || dev == nil {
+		log.Fatalf("OpenDevice failed - ensure it is connected: %v\n", err)
 	}
 	fmt.Printf("Device opened: %v\n", dev)
 	if err := dev.SetAutoDetach(true); err != nil {
