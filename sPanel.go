@@ -135,19 +135,50 @@ func initUSB(keymap keymapT) {
 			log.Fatalf("IN endpoint 1 returned 0 bytes of data.\n")
 		}
 		fmt.Printf("%03d-Data:", counter)
+		var outBytes [3]uint8
 		for i := 0; i < 3; i++ {
-			fmt.Printf("-%08b", uint8(buf[i]))
+			outBytes[i] = uint8(buf[i])
+			fmt.Printf("-%08b", outBytes[i])
 		}
-		//getPanelSwitch(buf, &p)
+		//getPanelSwitch(outBytes, &p)
 		fmt.Println()
 		counter++
 	}
 }
 
 func getPanelSwitch(b []byte, p *panelT) {
-	// rocker 2 on
-	if b[0] == 4 && b[1] == 32 && b[2] == 4 {
-		p.rocker[2] = true
-		fmt.Printf("Upper Switch 2 %v", p.rocker)
+	for i := uint(0); i < 8; i++ {
+		// byte 0
+		if b[0]&(1<<i) != 0 {
+			setRockerOn(i, p)
+		} else {
+			setRockerOff(i, p)
+		}
+		// byte 1
+		if b[1]&(1<<i) != 0 {
+			if i < 6 {
+				setRockerOn(i+8, p)
+			}
+		} else {
+			if i < 6 {
+				setRockerOff(i+8, p)
+			}
+		}
+		// byte 2
+		if b[2]&(1<<i) != 0 {
+		} else {
+		}
+	}
+}
+
+func setRockerOn(i uint, p *panelT) {
+	if !p.rocker[i] {
+		p.rocker[i] = true
+	}
+}
+
+func setRockerOff(i uint, p *panelT) {
+	if p.rocker[i] {
+		p.rocker[i] = false
 	}
 }
