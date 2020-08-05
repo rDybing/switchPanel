@@ -15,15 +15,15 @@ import (
 
 // keyMapT contains the Panel to Key definitions
 type keymapT struct {
-	Rotary [][]int // 0 through 4
-	Rocker [][]int // 0 through 12
-	Gear   [][]int // 0 and 1
+	Rotary   []keyT // 0 through 4
+	Switches []keyT // 0 through 12
+	Gear     keyT
 }
 
-type panelT struct {
-	rotary [5]bool
-	rocker [13]bool
-	gear   [2]bool
+type keyT struct {
+	Active bool
+	KeyOn  []int
+	KeyOff []int
 }
 
 func main() {
@@ -34,8 +34,8 @@ func main() {
 		log.Fatalf("Could not open keymap file: %v\n", err)
 	}
 	fmt.Println("Keymap file loaded!")
-	go initUSB(keymap)
-	time.Sleep(1 * time.Second)
+	go keymap.initUSB()
+	time.Sleep(500 * time.Millisecond)
 	fmt.Println("All good to go, type quit + return to exit!")
 	for !quit {
 		fmt.Scanf("%s\n", &input)
@@ -67,7 +67,7 @@ func getKeymap() (keymapT, error) {
 	} else {
 		fileNumber = "0"
 	}
-	keymap, err := loadKeyMap(fileNumber)
+	err := keymap.loadKeyMap(fileNumber)
 	if err != nil {
 		return keymap, err
 	}
@@ -75,8 +75,7 @@ func getKeymap() (keymapT, error) {
 }
 
 // loadKeyMap loads up a given keymap from a JSON file
-func loadKeyMap(in string) (keymapT, error) {
-	var km keymapT
+func (km *keymapT) loadKeyMap(in string) error {
 	if in == "" {
 		in = "0"
 	}
@@ -84,15 +83,15 @@ func loadKeyMap(in string) (keymapT, error) {
 	fmt.Println(fileName)
 	f, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return km, fmt.Errorf("Error, could not load keymap file: %s\n%v", fileName, err)
+		return fmt.Errorf("Error, could not load keymap file: %s\n%v", fileName, err)
 	}
 	if err := json.Unmarshal(f, &km); err != nil {
-		return km, fmt.Errorf("Error, could not unmarshal %s: %v", fileName, err)
+		return fmt.Errorf("Error, could not unmarshal %s: %v", fileName, err)
 	}
-	return km, nil
+	return nil
 }
 
-func initUSB(keymap keymapT) {
+func (km keymapT) initUSB() {
 	// open up usb connection
 	ctx := gousb.NewContext()
 	defer ctx.Close()
@@ -124,7 +123,6 @@ func initUSB(keymap keymapT) {
 		log.Fatalf("Opening %s.InEndpoint(1) failed: %v\n", intf, err)
 	}
 	counter := 0
-	//var p panelT
 	for {
 		buf := make([]byte, epIn.Desc.MaxPacketSize)
 		inBytes, err := epIn.Read(buf)
@@ -134,51 +132,72 @@ func initUSB(keymap keymapT) {
 		if inBytes == 0 {
 			log.Fatalf("IN endpoint 1 returned 0 bytes of data.\n")
 		}
-		fmt.Printf("%03d-Data:", counter)
 		var outBytes [3]uint8
 		for i := 0; i < 3; i++ {
 			outBytes[i] = uint8(buf[i])
-			fmt.Printf("-%08b", outBytes[i])
 		}
-		//getPanelSwitch(outBytes, &p)
+		km.getPanelSwitch(outBytes)
 		fmt.Println()
 		counter++
 	}
 }
 
-func getPanelSwitch(b []byte, p *panelT) {
+func (km *keymapT) getPanelSwitch(b [3]byte) {
 	for i := uint(0); i < 8; i++ {
 		// byte 0
 		if b[0]&(1<<i) != 0 {
-			setRockerOn(i, p)
+			km.setSwitchOn(i)
 		} else {
-			setRockerOff(i, p)
+			km.setSwitchOff(i)
 		}
 		// byte 1
 		if b[1]&(1<<i) != 0 {
-			if i < 6 {
-				setRockerOn(i+8, p)
+			if i < 5 {
+				km.setSwitchOn(i + 8)
 			}
 		} else {
-			if i < 6 {
-				setRockerOff(i+8, p)
+			if i < 5 {
+				km.setSwitchOff(i + 8)
 			}
 		}
 		// byte 2
 		if b[2]&(1<<i) != 0 {
-		} else {
+			// gear
+			if i == 2 {
+				km.setGearUp()
+			}
+			if i == 3 {
+				km.setGearDown()
+			}
 		}
 	}
 }
 
-func setRockerOn(i uint, p *panelT) {
-	if !p.rocker[i] {
-		p.rocker[i] = true
+func (km *keymapT) setSwitchOn(i uint) {
+	if !km.Switches[i].Active {
+		km.Switches[i].Active = true
+		fmt.Printf("Switch %d is ON\n", i)
 	}
 }
 
-func setRockerOff(i uint, p *panelT) {
-	if p.rocker[i] {
-		p.rocker[i] = false
+func (km *keymapT) setSwitchOff(i uint) {
+	if km.Switches[i].Active {
+		km.Switches[i].Active = false
+		fmt.Printf("Switch %d is OFF\n", i)
+
+	}
+}
+
+func (km *keymapT) setGearDown() {
+	if !km.Gear.Active {
+		km.Gear.Active = true
+		fmt.Printf("Gear is DOWN\n")
+	}
+}
+
+func (km *keymapT) setGearUp() {
+	if km.Gear.Active {
+		km.Gear.Active = false
+		fmt.Printf("Gear is UP\n")
 	}
 }

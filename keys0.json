@@ -1,28 +1,101 @@
 {
 	"Rotary": [
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0]
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		}
 	],
-	"Rocker": [
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0],
-		[0, 0]
+	"Switches": [
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		},
+		{
+			"Active": false,
+			"KeyOn": [0],
+			"KeyOff": [0]
+		}
 	],
-	"Gear": [
-		[0, 0],
-		[0, 0]
-	]
+	"Gear": {
+		"Active": false,
+		"KeyOn": [0],
+		"KeyOff": [0]
+	}
 }
