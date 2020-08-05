@@ -137,7 +137,6 @@ func (km keymapT) initUSB() {
 			outBytes[i] = uint8(buf[i])
 		}
 		km.getPanelSwitch(outBytes)
-		fmt.Println()
 		counter++
 	}
 }
@@ -154,6 +153,10 @@ func (km *keymapT) getPanelSwitch(b [3]byte) {
 		if b[1]&(1<<i) != 0 {
 			if i < 5 {
 				km.setSwitchOn(i + 8)
+			} else {
+				if !km.Rotary[i-5].Active {
+					km.setRotary(i - 5)
+				}
 			}
 		} else {
 			if i < 5 {
@@ -162,6 +165,18 @@ func (km *keymapT) getPanelSwitch(b [3]byte) {
 		}
 		// byte 2
 		if b[2]&(1<<i) != 0 {
+			// rotary pos 4
+			if i == 0 {
+				if !km.Rotary[3].Active {
+					km.setRotary(3)
+				}
+			}
+			// rotary pos 5
+			if i == 1 {
+				if !km.Rotary[4].Active {
+					km.setRotary(4)
+				}
+			}
 			// gear
 			if i == 2 {
 				km.setGearUp()
@@ -171,6 +186,19 @@ func (km *keymapT) getPanelSwitch(b [3]byte) {
 			}
 		}
 	}
+}
+
+func (km *keymapT) setRotary(i uint) {
+	for j := range km.Rotary {
+		if km.Rotary[j].Active {
+			km.Rotary[j].Active = false
+		}
+	}
+	if !km.Rotary[i].Active {
+		km.Rotary[i].Active = true
+		fmt.Printf("Rotary Position %d\n", i)
+	}
+
 }
 
 func (km *keymapT) setSwitchOn(i uint) {
