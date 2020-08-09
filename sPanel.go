@@ -27,8 +27,15 @@ type keyT struct {
 }
 
 func main() {
-	var input string
-	quit := false
+	fmt.Println("*********************************************************")
+	fmt.Println("*                                                       *")
+	fmt.Println("*         Logitech Switch Panel Generic Driver          *")
+	fmt.Println("*                     Version: 1.0                      *")
+	fmt.Println("*  Source Code: https://github.com/rDybing/switchPanel  *")
+	fmt.Println("*            MIT License © 2020 Roy Dybing              *")
+	fmt.Println("*                                                       *")
+	fmt.Println("*********************************************************")
+
 	keymap, err := getKeymap()
 	if err != nil {
 		log.Fatalf("Could not open keymap file: %v\n", err)
@@ -37,6 +44,8 @@ func main() {
 	go keymap.initUSB()
 	time.Sleep(500 * time.Millisecond)
 	fmt.Println("All good to go, type quit + return to exit!")
+	var input string
+	quit := false
 	for !quit {
 		fmt.Scanf("%s\n", &input)
 		input = stripNewline(input)
