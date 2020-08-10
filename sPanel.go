@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/gousb"
+	"github.com/micmonay/keybd_event"
 )
 
 // keyMapT contains the Panel to Key definitions
@@ -214,6 +216,9 @@ func (km *keymapT) setSwitchOn(i uint) {
 	if !km.Switches[i].Active {
 		km.Switches[i].Active = true
 		fmt.Printf("Switch %d is ON\n", i)
+		if err := pressKeys(km.Switches[i].KeyOn); err != nil {
+			log.Printf("Woopsie: %v\n", err)
+		}
 	}
 }
 
@@ -221,7 +226,9 @@ func (km *keymapT) setSwitchOff(i uint) {
 	if km.Switches[i].Active {
 		km.Switches[i].Active = false
 		fmt.Printf("Switch %d is OFF\n", i)
-
+		if err := pressKeys(km.Switches[i].KeyOff); err != nil {
+			log.Printf("Woopsie: %v\n", err)
+		}
 	}
 }
 
@@ -229,6 +236,9 @@ func (km *keymapT) setGearDown() {
 	if !km.Gear.Active {
 		km.Gear.Active = true
 		fmt.Printf("Gear is DOWN\n")
+		if err := pressKeys(km.Gear.KeyOff); err != nil {
+			log.Printf("Woopsie: %v\n", err)
+		}
 	}
 }
 
@@ -236,5 +246,70 @@ func (km *keymapT) setGearUp() {
 	if km.Gear.Active {
 		km.Gear.Active = false
 		fmt.Printf("Gear is UP\n")
+		if err := pressKeys(km.Gear.KeyOn); err != nil {
+			log.Printf("Woopsie: %v\n", err)
+		}
 	}
+}
+
+func pressKeys(keys []int) error {
+	kb, err := keybd_event.NewKeyBonding()
+	if err != nil {
+		return fmt.Errorf("Could not create new key bonding: %v", err)
+	}
+	var linux bool
+	if runtime.GOOS == "linux" {
+		time.Sleep(2 * time.Second)
+		linux = true
+	}
+	var key int
+	if len(keys) > 1 {
+		key = keys[1]
+		if linux {
+			switch keys[0] {
+			// alt
+			case 56:
+				kb.HasALT(true)
+			// l shift
+			case 42:
+				kb.HasSHIFT(true)
+			// r shift
+			case 54:
+				kb.HasSHIFTR(true)
+			// l ctrl
+			case 29:
+				kb.HasCTRL(true)
+			// r ctrl
+			case 97:
+				kb.HasCTRLR(true)
+			}
+		} else {
+			switch keys[0] {
+			// alt
+			case 4113:
+				kb.HasALT(true)
+			// l shift
+			case 4255:
+				kb.HasSHIFT(true)
+			// r shift
+			case 4256:
+				kb.HasSHIFTR(true)
+			// l ctrl
+			case 4257:
+				kb.HasCTRL(true)
+			// r ctrl
+			case 4258:
+				kb.HasCTRLR(true)
+			}
+		}
+	} else {
+		key = keys[0]
+	}
+	kb.SetKeys(key)
+	err = kb.Launching()
+	if err != nil {
+		return fmt.Errorf("Could not press keys: %v", err)
+	}
+	kb.Clear()
+	return nil
 }
