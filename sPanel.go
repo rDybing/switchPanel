@@ -17,6 +17,7 @@ import (
 
 // keyMapT contains the Panel to Key definitions
 type keymapT struct {
+	IsLinux  bool
 	Rotary   []keyT // 0 through 4
 	Switches []keyT // 0 through 12
 	Gear     keyT
@@ -43,8 +44,11 @@ func main() {
 		log.Fatalf("Could not open keymap file: %v\n", err)
 	}
 	fmt.Println("Keymap file loaded!")
-	go keymap.initUSB()
-	time.Sleep(500 * time.Millisecond)
+	keyBonding, err := keymap.initKeys()
+	if err != nil {
+		log.Fatalf("Could not initialize keyboard emulation")
+	}
+	go keymap.initUSB(keyBonding)
 	fmt.Println("All good to go, type quit + return to exit!")
 	var input string
 	quit := false
@@ -102,7 +106,7 @@ func (km *keymapT) loadKeyMap(in string) error {
 	return nil
 }
 
-func (km keymapT) initUSB() {
+func (km keymapT) initUSB(kb keybd_event.KeyBonding) {
 	// open up usb connection
 	ctx := gousb.NewContext()
 	defer ctx.Close()
@@ -147,31 +151,31 @@ func (km keymapT) initUSB() {
 		for i := 0; i < 3; i++ {
 			outBytes[i] = uint8(buf[i])
 		}
-		km.getPanelSwitch(outBytes)
+		km.getPanelSwitch(&kb, outBytes)
 		counter++
 	}
 }
 
-func (km *keymapT) getPanelSwitch(b [3]byte) {
+func (km *keymapT) getPanelSwitch(kb *keybd_event.KeyBonding, b [3]byte) {
 	for i := uint(0); i < 8; i++ {
 		// byte 0
 		if b[0]&(1<<i) != 0 {
-			km.setSwitchOn(i)
+			km.setSwitchOn(kb, i)
 		} else {
-			km.setSwitchOff(i)
+			km.setSwitchOff(kb, i)
 		}
 		// byte 1
 		if b[1]&(1<<i) != 0 {
 			if i < 5 {
-				km.setSwitchOn(i + 8)
+				km.setSwitchOn(kb, i+8)
 			} else {
 				if !km.Rotary[i-5].Active {
-					km.setRotary(i - 5)
+					km.setRotary(kb, i-5)
 				}
 			}
 		} else {
 			if i < 5 {
-				km.setSwitchOff(i + 8)
+				km.setSwitchOff(kb, i+8)
 			}
 		}
 		// byte 2
@@ -179,27 +183,27 @@ func (km *keymapT) getPanelSwitch(b [3]byte) {
 			// rotary pos 4
 			if i == 0 {
 				if !km.Rotary[3].Active {
-					km.setRotary(3)
+					km.setRotary(kb, 3)
 				}
 			}
 			// rotary pos 5
 			if i == 1 {
 				if !km.Rotary[4].Active {
-					km.setRotary(4)
+					km.setRotary(kb, 4)
 				}
 			}
 			// gear
 			if i == 2 {
-				km.setGearUp()
+				km.setGearUp(kb)
 			}
 			if i == 3 {
-				km.setGearDown()
+				km.setGearDown(kb)
 			}
 		}
 	}
 }
 
-func (km *keymapT) setRotary(i uint) {
+func (km *keymapT) setRotary(kb *keybd_event.KeyBonding, i uint) {
 	for j := range km.Rotary {
 		if km.Rotary[j].Active {
 			km.Rotary[j].Active = false
@@ -212,56 +216,61 @@ func (km *keymapT) setRotary(i uint) {
 
 }
 
-func (km *keymapT) setSwitchOn(i uint) {
+func (km *keymapT) setSwitchOn(kb *keybd_event.KeyBonding, i uint) {
 	if !km.Switches[i].Active {
 		km.Switches[i].Active = true
 		fmt.Printf("Switch %d is ON\n", i)
-		if err := pressKeys(km.Switches[i].KeyOn); err != nil {
+		if err := pressKeys(kb, km.IsLinux, km.Switches[i].KeyOn); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
 	}
 }
 
-func (km *keymapT) setSwitchOff(i uint) {
+func (km *keymapT) setSwitchOff(kb *keybd_event.KeyBonding, i uint) {
 	if km.Switches[i].Active {
 		km.Switches[i].Active = false
 		fmt.Printf("Switch %d is OFF\n", i)
-		if err := pressKeys(km.Switches[i].KeyOff); err != nil {
+		if err := pressKeys(kb, km.IsLinux, km.Switches[i].KeyOff); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
 	}
 }
 
-func (km *keymapT) setGearDown() {
+func (km *keymapT) setGearDown(kb *keybd_event.KeyBonding) {
 	if !km.Gear.Active {
 		km.Gear.Active = true
 		fmt.Printf("Gear is DOWN\n")
-		if err := pressKeys(km.Gear.KeyOff); err != nil {
+		if err := pressKeys(kb, km.IsLinux, km.Gear.KeyOff); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
 	}
 }
 
-func (km *keymapT) setGearUp() {
+func (km *keymapT) setGearUp(kb *keybd_event.KeyBonding) {
 	if km.Gear.Active {
 		km.Gear.Active = false
 		fmt.Printf("Gear is UP\n")
-		if err := pressKeys(km.Gear.KeyOn); err != nil {
+		if err := pressKeys(kb, km.IsLinux, km.Gear.KeyOn); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
 	}
 }
 
-func pressKeys(keys []int) error {
+func (km *keymapT) initKeys() (keybd_event.KeyBonding, error) {
 	kb, err := keybd_event.NewKeyBonding()
 	if err != nil {
-		return fmt.Errorf("Could not create new key bonding: %v", err)
+		return kb, fmt.Errorf("Could not create new key bonding: %v", err)
 	}
-	var linux bool
 	if runtime.GOOS == "linux" {
 		time.Sleep(2 * time.Second)
-		linux = true
+		km.IsLinux = true
+	} else {
+		km.IsLinux = false
 	}
+	return kb, nil
+}
+
+func pressKeys(kb *keybd_event.KeyBonding, linux bool, keys []int) error {
 	var key int
 	if len(keys) > 1 {
 		key = keys[1]
@@ -306,8 +315,7 @@ func pressKeys(keys []int) error {
 		key = keys[0]
 	}
 	kb.SetKeys(key)
-	err = kb.Launching()
-	if err != nil {
+	if err := kb.Launching(); err != nil {
 		return fmt.Errorf("Could not press keys: %v", err)
 	}
 	kb.Clear()
