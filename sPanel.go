@@ -219,7 +219,6 @@ func (km *keymapT) setRotary(kb *keybd_event.KeyBonding, i uint) {
 func (km *keymapT) setSwitchOn(kb *keybd_event.KeyBonding, i uint) {
 	if !km.Switches[i].Active {
 		km.Switches[i].Active = true
-		fmt.Printf("Switch %d is ON\n", i)
 		if err := pressKeys(kb, km.IsLinux, km.Switches[i].KeyOn); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
@@ -229,7 +228,6 @@ func (km *keymapT) setSwitchOn(kb *keybd_event.KeyBonding, i uint) {
 func (km *keymapT) setSwitchOff(kb *keybd_event.KeyBonding, i uint) {
 	if km.Switches[i].Active {
 		km.Switches[i].Active = false
-		fmt.Printf("Switch %d is OFF\n", i)
 		if err := pressKeys(kb, km.IsLinux, km.Switches[i].KeyOff); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
@@ -239,7 +237,6 @@ func (km *keymapT) setSwitchOff(kb *keybd_event.KeyBonding, i uint) {
 func (km *keymapT) setGearDown(kb *keybd_event.KeyBonding) {
 	if !km.Gear.Active {
 		km.Gear.Active = true
-		fmt.Printf("Gear is DOWN\n")
 		if err := pressKeys(kb, km.IsLinux, km.Gear.KeyOff); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}
@@ -249,7 +246,6 @@ func (km *keymapT) setGearDown(kb *keybd_event.KeyBonding) {
 func (km *keymapT) setGearUp(kb *keybd_event.KeyBonding) {
 	if km.Gear.Active {
 		km.Gear.Active = false
-		fmt.Printf("Gear is UP\n")
 		if err := pressKeys(kb, km.IsLinux, km.Gear.KeyOn); err != nil {
 			log.Printf("Woopsie: %v\n", err)
 		}

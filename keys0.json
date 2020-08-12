@@ -29,68 +29,68 @@
 	"Switches": [
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [42, 35],
+			"KeyOff": [35]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [18],
+			"KeyOff": [18]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [38],
+			"KeyOff": [38]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [38],
+			"KeyOff": [38]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [24],
+			"KeyOff": [24]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [57],
+			"KeyOff": [57]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [42, 17],
+			"KeyOff": [17]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [24],
+			"KeyOff": [24]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [19],
+			"KeyOff": [19]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [38],
+			"KeyOff": [38]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [32],
+			"KeyOff": [32]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [54, 2],
+			"KeyOff": [54, 2]
 		},
 		{
 			"Active": false,
-			"KeyOn": [0],
-			"KeyOff": [0]
+			"KeyOn": [54, 2],
+			"KeyOff": [54,2]
 		}
 	],
 	"Gear": {
